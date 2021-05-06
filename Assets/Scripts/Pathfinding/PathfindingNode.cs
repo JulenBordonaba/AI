@@ -3,304 +3,375 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class PathfindingNode : IConvertible
+namespace AI.Pathfinding
 {
-    #region fields
 
-    private NodeState state = NodeState.Untested;
-
-    private float weight;
-
-    private bool isDestination;
-
-    private HeuristicType heuristicType;
-
-    private PathfindingNode destination;
-
-    private PathfindingNode parent;
-
-    private Vector3 position;
-
-    private List<PathfindingNode> conections = new List<PathfindingNode>();
-
-    private bool isStatic;
-
-    private float manhattaDistanceToDestination;
-
-    private float euclideanDistanceToDestination;
-
-    #endregion
-
-    #region Methods
-
-    public void UpdateDistances()
+    [System.Serializable]
+    [SerializeField]
+    public class PathfindingNode : IConvertible
     {
-        manhattaDistanceToDestination = position.ManhattaDistance(destination.position);
-        euclideanDistanceToDestination = Vector3.Distance(position, destination.position);
-    }
+        #region fields
 
-    #region IConvertible
+        private NodeState state = NodeState.Untested;
 
-    public TypeCode GetTypeCode()
-    {
-        throw new NotImplementedException();
-    }
+        private float weight;
 
-    public bool ToBoolean(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private bool isDestination;
 
-    public byte ToByte(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private HeuristicType heuristicType;
 
-    public char ToChar(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        [SerializeField]
+        private PathfindingNode destination;
 
-    public DateTime ToDateTime(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        [SerializeField]
+        private PathfindingNode parent;
 
-    public decimal ToDecimal(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        [SerializeField]
+        private Vector3 position;
 
-    public double ToDouble(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private List<PathfindingNode> connections = new List<PathfindingNode>();
 
-    public short ToInt16(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private bool isStatic;
 
-    public int ToInt32(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private float manhattaDistanceToDestination;
 
-    public long ToInt64(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private float euclideanDistanceToDestination;
 
-    public sbyte ToSByte(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private float distanceToParent;
 
-    public float ToSingle(IFormatProvider provider)
-    {
-        return F;
-    }
+        protected string id;
 
-    public string ToString(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        private Dictionary<PathfindingNode, PathfindingConnection> connectionDictionary = new Dictionary<PathfindingNode, PathfindingConnection>();
 
-    public object ToType(Type conversionType, IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        #endregion
 
-    public ushort ToUInt16(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
+        #region Methods
 
-    public uint ToUInt32(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
-
-    public ulong ToUInt64(IFormatProvider provider)
-    {
-        throw new NotImplementedException();
-    }
-
-    #endregion
-
-    #endregion
-
-    #region Properties
-
-    public bool IsStatic
-    {
-        get
+        public void UpdateDistances()
         {
-            return isStatic;
+            manhattaDistanceToDestination = position.ManhattaDistance(destination.position);
+            euclideanDistanceToDestination = Vector3.Distance(position, destination.position);
         }
-        set
-        {
-            bool aux = isStatic;
-            isStatic = value;
 
-            if (isStatic && !aux)
+        public void Reset(NodeResetMode resetMode)
+        {
+            switch (resetMode)
             {
-                UpdateDistances();
-            }
-        }
-    }
-
-    public List<PathfindingNode> Conections
-    {
-        get
-        {
-            return conections;
-        }
-        set
-        {
-            conections = value;
-        }
-    }
-
-    public PathfindingNode Parent
-    {
-        get
-        {
-            return parent;
-        }
-        set
-        {
-            parent = value;
-        }
-    }
-
-    public bool ConnectedToDestination
-    {
-        get
-        {
-            return conections.Contains(destination);
-        }
-    }
-
-    public Vector3 Position
-    {
-        get
-        {
-            return position;
-        }
-        set
-        {
-            position = value;
-        }
-    }
-
-    public PathfindingNode Destination
-    {
-        get
-        {
-            return destination;
-        }
-        set
-        {
-            destination = value;
-        }
-    }
-
-    public NodeState State
-    {
-        get
-        {
-            return state;
-        }
-        set
-        {
-            state = value;
-        }
-    }
-
-    public bool IsDestination
-    {
-        get
-        {
-            return isDestination;
-        }
-        set
-        {
-            isDestination = value;
-        }
-    }
-
-    public HeuristicType HeuristicType
-    {
-        get
-        {
-            return heuristicType;
-        }
-        set
-        {
-            heuristicType = value;
-        }
-    }
-
-    public float Weight
-    {
-        get
-        {
-            return weight;
-        }
-        set
-        {
-            weight = value;
-        }
-    }
-
-    public float Heuristic
-    {
-        get
-        {
-            float returnValue = 0;
-            switch (heuristicType)
-            {
-                case HeuristicType.euclidean:
-                    returnValue = EuclideanDistanceToDestination;
+                case NodeResetMode.complete:
+                    weight = 0;
+                    destination = null;
+                    isDestination = false;
+                    connections.Clear();
                     break;
-                case HeuristicType.manhattan:
-                    returnValue = ManhattanDistanceToDestination;
+                case NodeResetMode.conections:
+                    connections.Clear();
+                    break;
+                case NodeResetMode.configuration:
+                    weight = 0;
+                    destination = null;
+                    isDestination = false;
                     break;
                 default:
-                    Debug.LogError("Heuristic type not implemented");
                     break;
             }
-
-            return returnValue;
         }
-    }
 
-    public float ManhattanDistanceToDestination
-    {
-        get
+        public override string ToString()
         {
-            if (isStatic) return manhattaDistanceToDestination;
-            return position.ManhattaDistance(destination.position);
-        }
-    }
+            string toString = "";
 
-    public float EuclideanDistanceToDestination
-    {
-        get
+            //toString = string.Format("Position {0} /// Parent {1}", position, parent);
+            toString = string.Format("Name {0}, Position {1} ",id, position);
+
+            return toString;
+        }
+
+        #region IConvertible
+
+        public TypeCode GetTypeCode()
         {
-            if (isStatic) return euclideanDistanceToDestination;
-            return Vector3.Distance(position, destination.position);
+            throw new NotImplementedException();
         }
-    }
 
-    public float F
-    {
-        get
+        public bool ToBoolean(IFormatProvider provider)
         {
-            return Weight + Heuristic;
+            throw new NotImplementedException();
         }
-    }
 
-    #endregion
+        public byte ToByte(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public char ToChar(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DateTime ToDateTime(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal ToDecimal(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public double ToDouble(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public short ToInt16(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int ToInt32(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ToInt64(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public sbyte ToSByte(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public float ToSingle(IFormatProvider provider)
+        {
+            return F;
+        }
+
+        public string ToString(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object ToType(Type conversionType, IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ushort ToUInt16(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public uint ToUInt32(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ulong ToUInt64(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Properties
+
+        public string Id
+        {
+            get => id;
+        }
+
+        public bool IsStatic
+        {
+            get
+            {
+                return isStatic;
+            }
+            set
+            {
+                bool aux = isStatic;
+                isStatic = value;
+
+                if (isStatic && !aux)
+                {
+                    UpdateDistances();
+                }
+            }
+        }
+
+        public List<PathfindingNode> Connections
+        {
+            get
+            {
+                return connections;
+            }
+            set
+            {
+                connections = value;
+            }
+        }
+
+        public PathfindingNode Parent
+        {
+            get
+            {
+                return parent;
+            }
+            set
+            {
+                parent = value;
+                weight = parent.weight + Vector3.Distance(position, parent.position);
+            }
+        }
+
+        public bool ConnectedToDestination
+        {
+            get
+            {
+                return connections.Contains(destination);
+            }
+        }
+
+        public Vector3 Position
+        {
+            get
+            {
+                return position;
+            }
+            set
+            {
+                position = value;
+            }
+        }
+
+        public PathfindingNode Destination
+        {
+            get
+            {
+                return destination;
+            }
+            set
+            {
+                destination = value;
+            }
+        }
+
+        public NodeState State
+        {
+            get
+            {
+                return state;
+            }
+            set
+            {
+                state = value;
+            }
+        }
+
+        public bool IsDestination
+        {
+            get
+            {
+                return isDestination;
+            }
+            set
+            {
+                isDestination = value;
+            }
+        }
+
+        public HeuristicType HeuristicType
+        {
+            get
+            {
+                return heuristicType;
+            }
+            set
+            {
+                heuristicType = value;
+            }
+        }
+
+        public float Weight
+        {
+            get
+            {
+                return weight;
+            }
+            set
+            {
+                weight = value;
+            }
+        }
+
+        public float Heuristic
+        {
+            get
+            {
+                float returnValue = 0;
+                switch (heuristicType)
+                {
+                    case HeuristicType.euclidean:
+                        returnValue = EuclideanDistanceToDestination;
+                        break;
+                    case HeuristicType.manhattan:
+                        returnValue = ManhattanDistanceToDestination;
+                        break;
+                    default:
+                        Debug.LogError("Heuristic type not implemented");
+                        break;
+                }
+
+                return returnValue;
+            }
+        }
+
+        public float ManhattanDistanceToDestination
+        {
+            get
+            {
+                if (isStatic) return manhattaDistanceToDestination;
+                return position.ManhattaDistance(destination.position);
+            }
+        }
+
+        public float EuclideanDistanceToDestination
+        {
+            get
+            {
+                if (isStatic) return euclideanDistanceToDestination;
+
+                if (position == null) Debug.Log("Position = null");
+                if (destination == null) Debug.Log("destination = null");
+                else if (destination.position == null) Debug.Log("destination.position = null");
+
+                return Vector3.Distance(position, destination.position);
+            }
+        }
+
+        public float F
+        {
+            get
+            {
+                return Weight + Heuristic;
+            }
+        }
+
+        public Dictionary<PathfindingNode, PathfindingConnection> ConnectionDictionary
+        {
+            get
+            {
+                return connectionDictionary;
+            }
+            set
+            {
+                connectionDictionary = value;
+            }
+        }
+
+        #endregion
+    }
 }

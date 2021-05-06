@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/FuzzyLogic.unity
+    guid: 292233bc56f6c9d46a46fab4f355de4e
   m_configObjects: {}

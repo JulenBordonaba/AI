@@ -2,36 +2,52 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EnemyStates
+namespace AI
 {
-    patrol, alert, chase
-}
+    #region StateMachine
 
-public enum HeuristicType
-{
-    euclidean, manhattan
-}
+    public enum EnemyStates
+    {
+        patrol, alert, chase
+    }
 
-public enum SortingOrder
-{
-    ascendant, descendent
-}
+    #endregion
 
-/// <summary>
-/// Represents the search state of a Node
-/// </summary>
-public enum NodeState
-{
+    #region Pathfinding
+
+    public enum HeuristicType
+    {
+        euclidean, manhattan
+    }
+
+    public enum SortingOrder
+    {
+        ascendant, descendent
+    }
+
+    public enum NodeResetMode
+    {
+        conections, configuration, complete
+    }
+
     /// <summary>
-    /// The node has not yet been considered in any possible paths
+    /// Represents the search state of a Node
     /// </summary>
-    Untested,
-    /// <summary>
-    /// The node has been identified as a possible step in a path
-    /// </summary>
-    Open,
-    /// <summary>
-    /// The node has already been included in a path and will not be considered again
-    /// </summary>
-    Closed
+    public enum NodeState
+    {
+        /// <summary>
+        /// The node has not yet been considered in any possible paths
+        /// </summary>
+        Untested,
+        /// <summary>
+        /// The node has been identified as a possible step in a path
+        /// </summary>
+        Open,
+        /// <summary>
+        /// The node has already been included in a path and will not be considered again
+        /// </summary>
+        Closed
+    }
+
+    #endregion
 }

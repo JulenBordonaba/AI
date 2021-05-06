@@ -3,23 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StateMachine : MonoBehaviour
+namespace AI.StateMachine
 {
-    [SerializeField]
-    protected State currentState;
-
-    public void SetState(State state)
+    public class StateMachine : MonoBehaviour
     {
-        if(currentState!=null)
+        [SerializeField]
+        protected State currentState;
+
+        public void SetState(State state)
         {
-            StartCoroutine(currentState.End());
+            if (currentState != null)
+            {
+                StartCoroutine(currentState.End());
+            }
+            currentState = state;
+            StartCoroutine(currentState.Start());
         }
-        currentState = state;
-        StartCoroutine(currentState.Start());
-    }
 
-    protected virtual void Update()
-    {
-        currentState.Update();
+        protected virtual void Update()
+        {
+            currentState.Update();
+        }
     }
 }
